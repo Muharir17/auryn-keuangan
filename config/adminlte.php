@@ -319,39 +319,58 @@ return [
             'text' => 'Kelas',
             'url' => 'classes',
             'icon' => 'fas fa-fw fa-school',
+            'can' => 'manage-classes',
+        ],
+        [
+            'text' => 'Kenaikan Kelas',
+            'url' => 'classes/promotion',
+            'icon' => 'fas fa-fw fa-level-up-alt',
+            'can' => 'manage-classes',
         ],
 
         [
             'text' => 'Siswa',
             'url' => 'students',
             'icon' => 'fas fa-fw fa-user-graduate',
+            'can' => 'view-students',
         ],
 
-        ['header' => 'KEUANGAN'],
+        ['header' => 'KEUANGAN', 'can' => 'view-payments'],
 
         [
             'text' => 'Jenis Pembayaran',
             'url' => 'payment-types',
             'icon' => 'fas fa-fw fa-tags',
+            'can' => 'manage-payment-types',
         ],
 
         [
             'text' => 'Tagihan',
             'url' => 'bills',
             'icon' => 'fas fa-fw fa-file-invoice',
+            'can' => 'manage-bills',
         ],
 
         [
             'text' => 'Pembayaran',
             'url' => 'payments',
             'icon' => 'fas fa-fw fa-credit-card',
+            'can' => 'view-payments',
         ],
 
-        ['header' => 'MANAJEMEN RBAC'],
+        [
+            'text' => 'Tunggakan',
+            'url' => 'arrears',
+            'icon' => 'fas fa-fw fa-exclamation-circle',
+            'can' => 'view-arrears',
+        ],
+
+        ['header' => 'MANAJEMEN RBAC', 'can' => 'manage-roles'],
 
         [
             'text' => 'RBAC',
             'icon' => 'fas fa-fw fa-user-shield',
+            'can' => 'manage-roles',
             'submenu' => [
                 [
                     'text' => 'Roles',
@@ -369,6 +388,7 @@ return [
         [
             'text' => 'Users',
             'icon' => 'fas fa-fw fa-users',
+            'can' => 'manage-users',
             'submenu' => [
                 [
                     'text' => 'Wali Kelas',
@@ -383,46 +403,52 @@ return [
             ],
         ],
 
-        ['header' => 'LAPORAN'],
+        ['header' => 'LAPORAN', 'can' => 'view-reports'],
 
         [
             'text' => 'Laporan Keuangan',
             'url' => 'reports/financial',
             'icon' => 'fas fa-fw fa-chart-line',
+            'can' => 'view-reports',
         ],
 
         [
             'text' => 'Laporan Pembayaran',
             'url' => 'reports/payments',
             'icon' => 'fas fa-fw fa-money-bill-wave',
+            'can' => 'view-reports',
         ],
 
-        ['header' => 'MANAJEMEN BOS'],
+        ['header' => 'MANAJEMEN BOS', 'can' => 'view-bos'],
 
         [
             'text' => 'Budget BOS',
             'url' => 'bos/budgets',
             'icon' => 'fas fa-fw fa-wallet',
+            'can' => 'view-bos',
         ],
 
         [
             'text' => 'Transaksi BOS',
             'url' => 'bos/transactions',
             'icon' => 'fas fa-fw fa-exchange-alt',
+            'can' => 'view-bos',
         ],
 
-        ['header' => 'MANAJEMEN PROPOSAL'],
+        ['header' => 'MANAJEMEN PROPOSAL', 'can' => 'view-proposals'],
 
         [
             'text' => 'Daftar Proposal',
             'url' => 'proposals',
             'icon' => 'fas fa-fw fa-file-alt',
+            'can' => 'view-proposals',
         ],
 
         [
             'text' => 'Approval Proposal',
             'url' => 'proposals/approval',
             'icon' => 'fas fa-fw fa-check-circle',
+            'can' => 'approve-proposals',
         ],
 
         ['header' => 'PENGATURAN'],
@@ -431,6 +457,7 @@ return [
             'text' => 'Settings',
             'url' => 'settings',
             'icon' => 'fas fa-fw fa-cog',
+            'can' => 'manage-settings',
         ],
 
         [

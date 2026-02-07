@@ -8,6 +8,13 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('can:view-students')->only(['index', 'show', 'paymentHistory', 'arrearsDetail']);
+        $this->middleware('can:manage-students')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    }
+
     public function index(Request $request)
     {
         $query = Student::with('class');
@@ -24,8 +31,8 @@ class StudentController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
+                    ->orWhere('nis', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%");
             });
         }
 

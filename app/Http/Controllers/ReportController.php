@@ -163,4 +163,24 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('reports.pdf.bills', compact('bills'));
         return $pdf->download('laporan-tagihan-' . date('Y-m-d') . '.pdf');
     }
+
+
+    /**
+     * Export Laporan Harian (Daily Recap)
+     */
+    public function dailyRecapPdf(Request $request)
+    {
+        $date = $request->get('date', date('Y-m-d'));
+
+        $payments = Payment::with(['student.class', 'bill.paymentType', 'validator', 'uploader'])
+            ->whereDate('created_at', $date)
+            ->whereIn('status', ['approved', 'pending']) // Include pending as "received but not validated"
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $pdf = Pdf::loadView('reports.pdf.daily_recap', compact('payments', 'date'));
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download('laporan-harian-' . $date . '.pdf');
+    }
 }

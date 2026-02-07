@@ -11,12 +11,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PaymentController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
+        // View (and Print) access
+        $this->middleware('can:view-payments')->only(['index', 'show', 'printReceipt']);
+        // Input access (Teachers/Admin/Finance)
+        $this->middleware('can:create-payments')->only(['create', 'store']);
+        // Validation & Modification access (Admin/Finance only)
+        $this->middleware('can:validate-payments')->only(['validatePayment', 'validationQueue', 'edit', 'update', 'destroy']);
+        // Bulk Upload access
+        $this->middleware('can:bulk-upload-payments')->only(['bulkUpload', 'processBulkUpload']);
     }
 
     /**
@@ -332,5 +341,25 @@ class PaymentController extends Controller
         }
 
         return back()->with('success', "Berhasil mengunggah {$uploadedCount} bukti pembayaran. Silakan lakukan matching manual di halaman validasi.");
+    }
+
+    /**
+     * Print Payment Receipt (PDF)
+     */
+    public function printReceipt(Payment $payment)
+    {
+        // Ensure user can view this payment
+        // $this->authorize('view', $payment); 
+        // Using manual check based on our role system:
+        // Teacher can only view their own input? Or generally all students in their class?
+        // Since we have 'view-payments' logic in constructor, we rely on middleware.
+        // But for receipt, any authorized user (Teacher/Admin/Finance) should be able to print.
+
+        $payment->load(['student.class', 'bill.paymentType', 'validator', 'uploader']);
+
+        $pdf = Pdf::loadView('payments.receipt_pdf', compact('payment'));
+        $pdf->setPaper('a5', 'landscape'); // Kwitansi A5 Landscape
+
+        return $pdf->stream('kwitansi-' . $payment->payment_number . '.pdf');
     }
 }

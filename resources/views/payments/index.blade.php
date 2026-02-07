@@ -7,11 +7,17 @@
     <div class="col-sm-6">
         <h1>Manajemen Pembayaran</h1>
     </div>
-    <div class="col-sm-6">
-        <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-            <li class="breadcrumb-item active">Pembayaran</li>
-        </ol>
+    <div class="col-sm-6 text-right">
+        @can('view-reports')
+        <a href="{{ route('reports.daily.pdf') }}" id="btn-daily-report" class="btn btn-secondary mr-2" target="_blank">
+             <i class="fas fa-file-pdf"></i> Cetak Laporan Harian
+        </a>
+        @endcan
+        @can('create-payments')
+        <a href="{{ route('payments.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Input Pembayaran Baru
+        </a>
+        @endcan
     </div>
 </div>
 @stop
@@ -107,6 +113,10 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
+                                        <a href="{{ route('payments.print', $payment) }}" class="btn btn-secondary btn-sm"
+                                            title="Cetak Kwitansi" target="_blank">
+                                            <i class="fas fa-print"></i>
+                                        </a>
                                         <a href="{{ route('payments.show', $payment) }}" class="btn btn-info btn-sm"
                                             title="Detail">
                                             <i class="fas fa-eye"></i>
@@ -187,6 +197,17 @@
 @push('scripts')
     <script>
         $(document).ready(function () {
+            // Update Daily Report Button URL when date changes
+            $('#filter-date').on('change', function () {
+                var date = $(this).val();
+                var baseUrl = '{{ route('reports.daily.pdf') }}';
+                if (date) {
+                    $('#btn-daily-report').attr('href', baseUrl + '?date=' + date);
+                } else {
+                    $('#btn-daily-report').attr('href', baseUrl);
+                }
+            });
+
             // Filter functionality
             $('#filter-status, #filter-class, #filter-date, #search-student').on('change keyup', function () {
                 var status = $('#filter-status').val();

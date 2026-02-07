@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create Admin
+        // 1. Admin
         $admin = User::updateOrCreate(
             ['email' => 'admin@smpasm.sch.id'],
             [
@@ -23,11 +23,11 @@ class UserSeeder extends Seeder
         );
         Bouncer::assign('admin')->to($admin);
 
-        // Create Finance
+        // 2. Finance (Bendahara)
         $finance = User::updateOrCreate(
             ['email' => 'finance@smpasm.sch.id'],
             [
-                'name' => 'Bendahara',
+                'name' => 'Siti Aminah, S.E', // Bendahara
                 'password' => Hash::make('password'),
                 'phone' => '081234567891',
                 'is_active' => true,
@@ -35,11 +35,11 @@ class UserSeeder extends Seeder
         );
         Bouncer::assign('finance')->to($finance);
 
-        // Create Principal
+        // 3. Principal (Kepala Sekolah)
         $principal = User::updateOrCreate(
             ['email' => 'principal@smpasm.sch.id'],
             [
-                'name' => 'Kepala Sekolah',
+                'name' => 'Drs. H. Ahmad Dahlan', // Kepala Sekolah
                 'password' => Hash::make('password'),
                 'phone' => '081234567892',
                 'is_active' => true,
@@ -47,11 +47,11 @@ class UserSeeder extends Seeder
         );
         Bouncer::assign('principal')->to($principal);
 
-        // Create Foundation
+        // 4. Foundation (Yayasan)
         $foundation = User::updateOrCreate(
             ['email' => 'foundation@smpasm.sch.id'],
             [
-                'name' => 'Yayasan',
+                'name' => 'Hj. Fatimah', // Yayasan
                 'password' => Hash::make('password'),
                 'phone' => '081234567893',
                 'is_active' => true,
@@ -59,29 +59,17 @@ class UserSeeder extends Seeder
         );
         Bouncer::assign('foundation')->to($foundation);
 
-        // Create Teacher 1
-        $teacher1 = User::updateOrCreate(
-            ['email' => 'teacher1@smpasm.sch.id'],
+        // 5. Teacher (Guru/Wali Kelas)
+        $teacher = User::updateOrCreate(
+            ['email' => 'teacher@smpasm.sch.id'],
             [
-                'name' => 'Guru Wali Kelas 7A',
+                'name' => 'Budi Santoso, S.Pd',
                 'password' => Hash::make('password'),
                 'phone' => '081234567894',
                 'is_active' => true,
             ]
         );
-        Bouncer::assign('teacher')->to($teacher1);
-
-        // Create Teacher 2
-        $teacher2 = User::updateOrCreate(
-            ['email' => 'teacher2@smpasm.sch.id'],
-            [
-                'name' => 'Guru Wali Kelas 8A',
-                'password' => Hash::make('password'),
-                'phone' => '081234567895',
-                'is_active' => true,
-            ]
-        );
-        Bouncer::assign('teacher')->to($teacher2);
+        Bouncer::assign('teacher')->to($teacher);
 
         $this->command->info('Users seeded successfully with Bouncer roles!');
     }
