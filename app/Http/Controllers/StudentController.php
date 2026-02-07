@@ -143,4 +143,28 @@ class StudentController extends Controller
 
         return view('students.arrears-detail', compact('student'));
     }
+
+    /**
+     * Get bills for a student (API endpoint).
+     */
+    public function getBills(Student $student)
+    {
+        $bills = \App\Models\Bill::with('paymentType')
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->get()
+            ->map(function ($bill) {
+                return [
+                    'id' => $bill->id,
+                    'payment_type' => [
+                        'name' => $bill->paymentType->name
+                    ],
+                    'due_date' => $bill->due_date->format('d M Y'),
+                    'amount' => $bill->amount,
+                    'amount_formatted' => 'Rp ' . number_format($bill->amount, 0, ',', '.')
+                ];
+            });
+
+        return response()->json($bills);
+    }
 }

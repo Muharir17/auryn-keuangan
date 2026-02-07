@@ -23,6 +23,9 @@
                 <div class="card-header">
                     <h3 class="card-title">Daftar Tagihan</h3>
                     <div class="card-tools">
+                        <a href="{{ route('reports.bills.pdf', request()->all()) }}" class="btn btn-danger btn-sm mr-2" target="_blank">
+                            <i class="fas fa-file-pdf"></i> Cetak PDF
+                        </a>
                         <button type="button" class="btn btn-success btn-sm mr-2" data-toggle="modal" data-target="#generateModal">
                             <i class="fas fa-magic"></i> Generate Bulanan
                         </button>

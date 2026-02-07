@@ -3,15 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Silber\Bouncer\Database\HasRolesAndAbilities;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasRolesAndAbilities;
 
     protected $fillable = [
         'name',
@@ -36,54 +36,35 @@ class User extends Authenticatable
         ];
     }
 
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class);
-    }
-
     public function classes(): HasMany
     {
         return $this->hasMany(ClassRoom::class, 'homeroom_teacher_id');
     }
 
-    public function hasRole(string $role): bool
-    {
-        return $this->roles()->where('name', $role)->exists();
-    }
-
-    public function hasPermission(string $permission): bool
-    {
-        foreach ($this->roles as $role) {
-            if ($role->hasPermission($permission)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    // Helper methods for role checking
     public function isTeacher(): bool
     {
-        return $this->hasRole('teacher');
+        return $this->isA('teacher');
     }
 
     public function isFinance(): bool
     {
-        return $this->hasRole('finance');
+        return $this->isA('finance');
     }
 
     public function isPrincipal(): bool
     {
-        return $this->hasRole('principal');
+        return $this->isA('principal');
     }
 
     public function isFoundation(): bool
     {
-        return $this->hasRole('foundation');
+        return $this->isA('foundation');
     }
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin');
+        return $this->isA('admin');
     }
 
     public function scopeActive($query)

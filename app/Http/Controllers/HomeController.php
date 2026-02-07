@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bill;
+use App\Models\BosBudget;
+use App\Models\BosTransaction;
 use App\Models\ClassRoom;
+use App\Models\Payment;
+use App\Models\Proposal;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -20,6 +25,7 @@ class HomeController extends Controller
     {
         $user = Auth::user();
 
+        // Basic stats
         $stats = [
             'total_students' => Student::active()->count(),
             'total_classes' => ClassRoom::active()->count(),
@@ -29,6 +35,32 @@ class HomeController extends Controller
             'total_bills_amount' => Bill::unpaid()->sum('final_amount'),
         ];
 
+        // Payment stats
+        $paymentStats = [
+            'total_payments' => Payment::where('status', 'approved')->count(),
+            'total_income' => Payment::where('status', 'approved')->sum('amount'),
+            'pending_payments' => Payment::where('status', 'pending')->count(),
+            'pending_amount' => Payment::where('status', 'pending')->sum('amount'),
+        ];
+
+        // BOS stats
+        $currentYear = date('Y');
+        $currentBudget = BosBudget::where('year', $currentYear)->first();
+        $bosStats = [
+            'current_budget' => $currentBudget->amount ?? 0,
+            'budget_used' => $currentBudget->used ?? 0,
+            'budget_remaining' => $currentBudget->remaining ?? 0,
+            'total_transactions' => BosTransaction::count(),
+        ];
+
+        // Proposal stats
+        $proposalStats = [
+            'pending_proposals' => Proposal::where('status', 'pending')->count(),
+            'approved_proposals' => Proposal::where('status', 'approved')->count(),
+            'total_proposal_amount' => Proposal::where('status', 'pending')->sum('amount'),
+        ];
+
+        // Recent data
         $recentStudents = Student::with('class')
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -40,6 +72,27 @@ class HomeController extends Controller
             ->limit(10)
             ->get();
 
-        return view('home', compact('stats', 'recentStudents', 'overduePayments'));
+        $recentPayments = Payment::with(['student', 'bill.paymentType'])
+            ->where('status', 'approved')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        $pendingProposals = Proposal::with('submitter')
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('home', compact(
+            'stats',
+            'paymentStats',
+            'bosStats',
+            'proposalStats',
+            'recentStudents',
+            'overduePayments',
+            'recentPayments',
+            'pendingProposals'
+        ));
     }
 }

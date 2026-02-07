@@ -2,21 +2,16 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Silber\Bouncer\BouncerFacade as Bouncer;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminRole = Role::where('name', 'admin')->first();
-        $teacherRole = Role::where('name', 'teacher')->first();
-        $financeRole = Role::where('name', 'finance')->first();
-        $principalRole = Role::where('name', 'principal')->first();
-        $foundationRole = Role::where('name', 'foundation')->first();
-
+        // Create Admin
         $admin = User::updateOrCreate(
             ['email' => 'admin@smpasm.sch.id'],
             [
@@ -26,8 +21,9 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $admin->roles()->sync([$adminRole->id]);
+        Bouncer::assign('admin')->to($admin);
 
+        // Create Finance
         $finance = User::updateOrCreate(
             ['email' => 'finance@smpasm.sch.id'],
             [
@@ -37,8 +33,9 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $finance->roles()->sync([$financeRole->id]);
+        Bouncer::assign('finance')->to($finance);
 
+        // Create Principal
         $principal = User::updateOrCreate(
             ['email' => 'principal@smpasm.sch.id'],
             [
@@ -48,8 +45,9 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $principal->roles()->sync([$principalRole->id]);
+        Bouncer::assign('principal')->to($principal);
 
+        // Create Foundation
         $foundation = User::updateOrCreate(
             ['email' => 'foundation@smpasm.sch.id'],
             [
@@ -59,8 +57,9 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $foundation->roles()->sync([$foundationRole->id]);
+        Bouncer::assign('foundation')->to($foundation);
 
+        // Create Teacher 1
         $teacher1 = User::updateOrCreate(
             ['email' => 'teacher1@smpasm.sch.id'],
             [
@@ -70,8 +69,9 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $teacher1->roles()->sync([$teacherRole->id]);
+        Bouncer::assign('teacher')->to($teacher1);
 
+        // Create Teacher 2
         $teacher2 = User::updateOrCreate(
             ['email' => 'teacher2@smpasm.sch.id'],
             [
@@ -81,6 +81,8 @@ class UserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $teacher2->roles()->sync([$teacherRole->id]);
+        Bouncer::assign('teacher')->to($teacher2);
+
+        $this->command->info('Users seeded successfully with Bouncer roles!');
     }
 }

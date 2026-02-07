@@ -98,7 +98,7 @@ class PaymentPolicy
      */
     public function validate(User $user): bool
     {
-        return $user->isAdmin() || $user->isFinance();
+        return $user->isAdmin() || $user->isFinance() || $user->can('validate-payments');
     }
 
     /**
@@ -106,7 +106,7 @@ class PaymentPolicy
      */
     public function bulkUpload(User $user): bool
     {
-        return $user->isAdmin() || $user->isFinance() || $user->isTeacher();
+        return $user->isAdmin() || $user->isFinance() || $user->isTeacher() || $user->can('bulk-upload-payments');
     }
 
     /**
@@ -114,6 +114,6 @@ class PaymentPolicy
      */
     public function viewValidationQueue(User $user): bool
     {
-        return $user->isAdmin() || $user->isFinance();
+        return $user->isAdmin() || $user->isFinance() || $user->can('validate-payments');
     }
 }

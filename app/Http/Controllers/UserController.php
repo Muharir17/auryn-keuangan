@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Silber\Bouncer\BouncerFacade as Bouncer;
 
 class UserController extends Controller
 {
@@ -24,8 +24,8 @@ class UserController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -58,11 +58,8 @@ class UserController extends Controller
 
         $user = User::create($validated);
 
-        // Assign teacher role
-        $teacherRole = Role::where('name', 'teacher')->first();
-        if ($teacherRole) {
-            $user->roles()->attach($teacherRole->id);
-        }
+        // Assign teacher role using Bouncer
+        Bouncer::assign('teacher')->to($user);
 
         return redirect()->route('users.index')
             ->with('success', 'Wali kelas berhasil ditambahkan.');
@@ -71,9 +68,9 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['roles', 'classes']);
-        
+
         // Ensure user has teacher role
-        if (!$user->hasRole('teacher')) {
+        if (!$user->isA('teacher')) {
             return redirect()->route('users.index')
                 ->with('error', 'Data pengguna bukan wali kelas.');
         }
@@ -84,7 +81,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         // Ensure user has teacher role
-        if (!$user->hasRole('teacher')) {
+        if (!$user->isA('teacher')) {
             return redirect()->route('users.index')
                 ->with('error', 'Data pengguna bukan wali kelas.');
         }
@@ -95,7 +92,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         // Ensure user has teacher role
-        if (!$user->hasRole('teacher')) {
+        if (!$user->isA('teacher')) {
             return redirect()->route('users.index')
                 ->with('error', 'Data pengguna bukan wali kelas.');
         }
@@ -125,7 +122,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         // Ensure user has teacher role
-        if (!$user->hasRole('teacher')) {
+        if (!$user->isA('teacher')) {
             return redirect()->route('users.index')
                 ->with('error', 'Data pengguna bukan wali kelas.');
         }

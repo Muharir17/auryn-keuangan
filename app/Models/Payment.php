@@ -19,6 +19,7 @@ class Payment extends Model
         'payment_date',
         'notes',
         'status',
+        'uploaded_by',
         'validator_id',
         'validated_at',
         'rejection_reason',
@@ -60,6 +61,11 @@ class Payment extends Model
         return $this->hasMany(PaymentSlip::class);
     }
 
+    public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
     // Scopes
     public function scopePending($query)
     {
@@ -94,7 +100,7 @@ class Payment extends Model
 
     public function getStatusBadgeAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => '<span class="badge badge-warning">Menunggu</span>',
             'validated' => '<span class="badge badge-success">Tervalidasi</span>',
             'rejected' => '<span class="badge badge-danger">Ditolak</span>',
@@ -103,14 +109,19 @@ class Payment extends Model
     }
 
     // Methods
-    public function validate(User $validator, string $receiptNumber = null)
+    public function approve(User $validator, string $receiptNumber = null)
     {
         $this->update([
-            'status' => 'validated',
+            'status' => 'approved',
             'validator_id' => $validator->id,
             'validated_at' => now(),
             'receipt_number' => $receiptNumber,
         ]);
+    }
+
+    public function validate(User $validator, string $receiptNumber = null)
+    {
+        return $this->approve($validator, $receiptNumber);
     }
 
     public function reject(User $validator, string $reason)

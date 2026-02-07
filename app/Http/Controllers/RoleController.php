@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Silber\Bouncer\BouncerFacade as Bouncer;
+use Silber\Bouncer\Database\Role;
+use Silber\Bouncer\Database\Ability;
 
 class RoleController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('permission:manage-roles');
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->can('manage-roles')) {
+                abort(403, 'Unauthorized action.');
+            }
+            return $next($request);
+        });
     }
 
     /**
@@ -19,7 +26,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::withCount('users')->latest()->paginate(10);
+        $roles = Role::with('abilities')->withCount('users')->latest()->paginate(10);
         return view('roles.index', compact('roles'));
     }
 
@@ -28,8 +35,8 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $role = new Role();
-        return view('roles.create', compact('role'));
+        $abilities = Ability::all();
+        return view('roles.create', compact('abilities'));
     }
 
     /**
@@ -39,22 +46,27 @@ class RoleController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:50|unique:roles,name',
-            'display_name' => 'required|string|max:100',
-            'description' => 'nullable|string|max:255',
-            'permissions' => 'array',
-            'permissions.*' => 'string|max:100',
+            'title' => 'required|string|max:100',
+            'abilities' => 'array',
+            'abilities.*' => 'exists:abilities,id',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        $role = Role::create([
+        $role = Bouncer::role()->create([
             'name' => $request->name,
-            'display_name' => $request->display_name,
-            'description' => $request->description,
-            'permissions' => $request->permissions ?? [],
+            'title' => $request->title,
         ]);
+
+        // Assign abilities to role
+        if ($request->has('abilities')) {
+            $abilities = Ability::whereIn('id', $request->abilities)->get();
+            foreach ($abilities as $ability) {
+                Bouncer::allow($role)->to($ability->name);
+            }
+        }
 
         return redirect()->route('roles.index')
             ->with('success', 'Role berhasil dibuat.');
@@ -65,7 +77,7 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        $role->load('users');
+        $role->load('users', 'abilities');
         return view('roles.show', compact('role'));
     }
 
@@ -74,7 +86,9 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        return view('roles.edit', compact('role'));
+        $abilities = Ability::all();
+        $roleAbilities = $role->abilities->pluck('id')->toArray();
+        return view('roles.edit', compact('role', 'abilities', 'roleAbilities'));
     }
 
     /**
@@ -84,10 +98,9 @@ class RoleController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:50|unique:roles,name,' . $role->id,
-            'display_name' => 'required|string|max:100',
-            'description' => 'nullable|string|max:255',
-            'permissions' => 'array',
-            'permissions.*' => 'string|max:100',
+            'title' => 'required|string|max:100',
+            'abilities' => 'array',
+            'abilities.*' => 'exists:abilities,id',
         ]);
 
         if ($validator->fails()) {
@@ -96,10 +109,26 @@ class RoleController extends Controller
 
         $role->update([
             'name' => $request->name,
-            'display_name' => $request->display_name,
-            'description' => $request->description,
-            'permissions' => $request->permissions ?? [],
+            'title' => $request->title,
         ]);
+
+        // Sync abilities
+        // First, remove all existing abilities
+        $currentAbilities = $role->abilities;
+        foreach ($currentAbilities as $ability) {
+            Bouncer::disallow($role)->to($ability->name);
+        }
+
+        // Then, assign new abilities
+        if ($request->has('abilities')) {
+            $abilities = Ability::whereIn('id', $request->abilities)->get();
+            foreach ($abilities as $ability) {
+                Bouncer::allow($role)->to($ability->name);
+            }
+        }
+
+        // Refresh cache
+        Bouncer::refresh();
 
         return redirect()->route('roles.index')
             ->with('success', 'Role berhasil diperbarui.');
@@ -127,36 +156,11 @@ class RoleController extends Controller
     }
 
     /**
-     * Get available permissions for the application.
+     * Get available abilities for the application.
      */
-    public function getPermissions()
+    public function getAbilities()
     {
-        $permissions = [
-            // User Management
-            'manage-users' => 'Kelola Users',
-            'manage-roles' => 'Kelola Roles',
-            'manage-permissions' => 'Kelola Permissions',
-            'manage-wali-kelas' => 'Kelola Wali Kelas',
-            
-            // Data Management
-            'manage-classes' => 'Kelola Kelas',
-            'manage-students' => 'Kelola Siswa',
-            
-            // Financial Management
-            'manage-payment-types' => 'Kelola Jenis Pembayaran',
-            'manage-bills' => 'Kelola Tagihan',
-            'view-payments' => 'Lihat Pembayaran',
-            'validate-payments' => 'Validasi Pembayaran',
-            
-            // Reports
-            'view-reports' => 'Lihat Laporan',
-            'export-reports' => 'Export Laporan',
-            
-            // System
-            'view-logs' => 'Lihat Log Sistem',
-            'manage-settings' => 'Kelola Pengaturan',
-        ];
-
-        return response()->json($permissions);
+        $abilities = Ability::all()->pluck('title', 'name');
+        return response()->json($abilities);
     }
 }

@@ -154,8 +154,8 @@ return [
 
     'layout_topnav' => null,
     'layout_boxed' => null,
-    'layout_fixed_sidebar' => null,
-    'layout_fixed_navbar' => null,
+    'layout_fixed_sidebar' => true,
+    'layout_fixed_navbar' => true,
     'layout_fixed_footer' => null,
     'layout_dark_mode' => null,
 
@@ -345,37 +345,42 @@ return [
             'text' => 'Pembayaran',
             'url' => 'payments',
             'icon' => 'fas fa-fw fa-credit-card',
-            'can' => 'view-payments',
         ],
 
         ['header' => 'MANAJEMEN RBAC'],
 
         [
-            'text' => 'Roles',
-            'url' => 'roles',
+            'text' => 'RBAC',
             'icon' => 'fas fa-fw fa-user-shield',
-            'can' => 'manage-roles',
+            'submenu' => [
+                [
+                    'text' => 'Roles',
+                    'url' => 'roles',
+                    'icon' => 'fas fa-fw fa-shield-alt',
+                ],
+                [
+                    'text' => 'Abilities',
+                    'url' => 'abilities',
+                    'icon' => 'fas fa-fw fa-key',
+                ],
+            ],
         ],
 
         [
-            'text' => 'Wali Kelas',
-            'url' => 'users/wali-kelas',
-            'icon' => 'fas fa-fw fa-chalkboard-teacher',
-            'can' => 'manage-wali-kelas',
-        ],
-
-        [
-            'text' => 'All Users',
-            'url' => 'users',
+            'text' => 'Users',
             'icon' => 'fas fa-fw fa-users',
-            'can' => 'manage-users',
-        ],
-
-        [
-            'text' => 'Permissions',
-            'url' => 'permissions',
-            'icon' => 'fas fa-fw fa-key',
-            'can' => 'manage-permissions',
+            'submenu' => [
+                [
+                    'text' => 'Wali Kelas',
+                    'url' => 'users',
+                    'icon' => 'fas fa-fw fa-chalkboard-teacher',
+                ],
+                [
+                    'text' => 'All Users',
+                    'url' => 'admin/users',
+                    'icon' => 'fas fa-fw fa-users-cog',
+                ],
+            ],
         ],
 
         ['header' => 'LAPORAN'],
@@ -384,21 +389,12 @@ return [
             'text' => 'Laporan Keuangan',
             'url' => 'reports/financial',
             'icon' => 'fas fa-fw fa-chart-line',
-            'can' => 'view-reports',
         ],
 
         [
             'text' => 'Laporan Pembayaran',
             'url' => 'reports/payments',
             'icon' => 'fas fa-fw fa-money-bill-wave',
-            'can' => 'view-reports',
-        ],
-
-        [
-            'text' => 'Audit Logs',
-            'url' => 'logs',
-            'icon' => 'fas fa-fw fa-history',
-            'can' => 'view-logs',
         ],
 
         ['header' => 'MANAJEMEN BOS'],
@@ -407,14 +403,12 @@ return [
             'text' => 'Budget BOS',
             'url' => 'bos/budgets',
             'icon' => 'fas fa-fw fa-wallet',
-            'can' => 'manage-bos',
         ],
 
         [
             'text' => 'Transaksi BOS',
             'url' => 'bos/transactions',
             'icon' => 'fas fa-fw fa-exchange-alt',
-            'can' => 'manage-bos',
         ],
 
         ['header' => 'MANAJEMEN PROPOSAL'],
@@ -423,14 +417,12 @@ return [
             'text' => 'Daftar Proposal',
             'url' => 'proposals',
             'icon' => 'fas fa-fw fa-file-alt',
-            'can' => 'manage-proposals',
         ],
 
         [
             'text' => 'Approval Proposal',
             'url' => 'proposals/approval',
             'icon' => 'fas fa-fw fa-check-circle',
-            'can' => 'approve-proposals',
         ],
 
         ['header' => 'PENGATURAN'],
@@ -439,26 +431,12 @@ return [
             'text' => 'Settings',
             'url' => 'settings',
             'icon' => 'fas fa-fw fa-cog',
-            'can' => 'manage-settings',
-        ],
-
-        [
-            'text' => 'System Information',
-            'url' => 'system/info',
-            'icon' => 'fas fa-fw fa-info-circle',
         ],
 
         [
             'text' => 'Profile',
             'url' => 'profile',
             'icon' => 'fas fa-fw fa-user',
-        ],
-
-        [
-            'text' => 'Logout',
-            'icon' => 'fas fa-fw fa-sign-out-alt',
-            'url' => '#',
-            'onclick' => "event.preventDefault(); document.getElementById('logout-form').submit();",
         ],
     ],
 
@@ -475,7 +453,8 @@ return [
     */
 
     'filters' => [
-        JeroenNoten\LaravelAdminLte\Menu\Filters\GateFilter::class,
+        // GateFilter disabled during development - restore at project end
+        // JeroenNoten\LaravelAdminLte\Menu\Filters\GateFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\HrefFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\SearchFilter::class,
         JeroenNoten\LaravelAdminLte\Menu\Filters\ActiveFilter::class,

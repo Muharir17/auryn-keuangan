@@ -7,6 +7,7 @@ use App\Models\PaymentSlip;
 use App\Models\Bill;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -23,30 +24,38 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Payment::with(['student', 'bill.paymentType', 'validator']);
+        $this->authorize('viewAny', Payment::class);
+
+        $query = Payment::with(['student.class', 'bill.paymentType', 'paymentSlips']);
 
         // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by student
-        if ($request->filled('student_id')) {
-            $query->where('student_id', $request->student_id);
+        // Filter by class
+        if ($request->filled('class')) {
+            $query->whereHas('student.class', function ($q) use ($request) {
+                $q->where('id', $request->class);
+            });
         }
 
-        // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('payment_date', '>=', $request->date_from);
+        // Filter by date
+        if ($request->filled('date')) {
+            $query->whereDate('payment_date', $request->date);
         }
-        if ($request->filled('date_to')) {
-            $query->whereDate('payment_date', '<=', $request->date_to);
+
+        // Search by student name
+        if ($request->filled('search')) {
+            $query->whereHas('student', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
         }
 
         $payments = $query->latest()->paginate(20);
-        $students = Student::active()->get();
+        $classes = \App\Models\ClassRoom::active()->get();
 
-        return view('payments.index', compact('payments', 'students'));
+        return view('payments.index', compact('payments', 'classes'));
     }
 
     /**
@@ -54,6 +63,8 @@ class PaymentController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Payment::class);
+
         $students = Student::active()->get();
         return view('payments.create', compact('students'));
     }
@@ -63,64 +74,60 @@ class PaymentController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Payment::class);
+
         $validator = Validator::make($request->all(), [
             'student_id' => 'required|exists:students,id',
             'bill_id' => 'required|exists:bills,id',
             'amount' => 'required|numeric|min:0',
-            'payment_method' => 'nullable|in:cash,transfer,e-wallet,cheque,other',
+            'payment_method' => 'required|in:cash,transfer,e-wallet,other',
             'payment_date' => 'required|date',
             'notes' => 'nullable|string|max:500',
-            'payment_slip' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'payment_slips.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Check if bill belongs to student
-        $bill = Bill::findOrFail($request->bill_id);
-        if ($bill->student_id != $request->student_id) {
-            return back()->with('error', 'Tagihan tidak sesuai dengan siswa yang dipilih.')->withInput();
-        }
-
-        // Upload payment slip
-        if ($request->hasFile('payment_slip')) {
-            $file = $request->file('payment_slip');
-            $fileName = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('payment_slips', $fileName, 'public');
-
-            // Create payment slip record
-            $paymentSlip = PaymentSlip::create([
-                'bill_id' => $bill->id,
-                'student_id' => $request->student_id,
-                'uploaded_by' => auth()->id(),
-                'original_filename' => $file->getClientOriginalName(),
-                'file_path' => $filePath,
-                'file_type' => $file->getMimeType(),
-                'file_size' => $file->getSize(),
-                'file_hash' => hash_file('sha256', $file->getPathname()),
-                'notes' => $request->notes,
-            ]);
-
-            // Create payment record
+        DB::beginTransaction();
+        try {
             $payment = Payment::create([
-                'bill_id' => $bill->id,
                 'student_id' => $request->student_id,
+                'bill_id' => $request->bill_id,
                 'amount' => $request->amount,
                 'payment_method' => $request->payment_method,
                 'payment_date' => $request->payment_date,
                 'notes' => $request->notes,
                 'status' => 'pending',
+                'uploaded_by' => auth()->id(),
             ]);
 
-            // Link payment slip to payment
-            $paymentSlip->update(['payment_id' => $payment->id]);
+            // Handle payment slips upload
+            if ($request->hasFile('payment_slips')) {
+                foreach ($request->file('payment_slips') as $file) {
+                    $fileName = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('payment_slips', $fileName, 'public');
 
+                    PaymentSlip::create([
+                        'payment_id' => $payment->id,
+                        'uploaded_by' => auth()->id(),
+                        'original_filename' => $file->getClientOriginalName(),
+                        'file_path' => $filePath,
+                        'file_type' => $file->getMimeType(),
+                        'file_size' => $file->getSize(),
+                        'file_hash' => hash_file('sha256', $file->getPathname()),
+                    ]);
+                }
+            }
+
+            DB::commit();
             return redirect()->route('payments.index')
                 ->with('success', 'Bukti pembayaran berhasil diunggah dan menunggu validasi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal mengunggah bukti pembayaran: ' . $e->getMessage())->withInput();
         }
-
-        return back()->with('error', 'Gagal mengunggah bukti pembayaran.')->withInput();
     }
 
     /**
@@ -193,15 +200,12 @@ class PaymentController extends Controller
             // Create new payment slip record
             PaymentSlip::create([
                 'payment_id' => $payment->id,
-                'bill_id' => $payment->bill_id,
-                'student_id' => $payment->student_id,
                 'uploaded_by' => auth()->id(),
                 'original_filename' => $file->getClientOriginalName(),
                 'file_path' => $filePath,
                 'file_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
                 'file_hash' => hash_file('sha256', $file->getPathname()),
-                'notes' => $request->notes,
             ]);
         }
 
@@ -249,7 +253,7 @@ class PaymentController extends Controller
     /**
      * Validate a payment.
      */
-    public function validate(Request $request, Payment $payment)
+    public function validatePayment(Request $request, Payment $payment)
     {
         $this->authorize('validate', Payment::class);
 
@@ -264,11 +268,11 @@ class PaymentController extends Controller
         }
 
         if ($request->action === 'approve') {
-            $payment->validate(auth()->user(), $request->receipt_number);
-            
+            $payment->approve(auth()->user(), $request->receipt_number);
+
             // Update bill status
             $payment->bill->updateStatus();
-            
+
             return back()->with('success', 'Pembayaran berhasil divalidasi.');
         } else {
             $payment->reject(auth()->user(), $request->rejection_reason);
