@@ -110,7 +110,7 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
+        'enabled' => false,
         'mode' => 'fullscreen',
         'img' => [
             'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
@@ -317,72 +317,34 @@ return [
 
         [
             'text' => 'Kelas',
+            'url' => 'classes',
             'icon' => 'fas fa-fw fa-school',
-            'submenu' => [
-                [
-                    'text' => 'Daftar Kelas',
-                    'url' => 'classes',
-                    'icon' => 'fas fa-fw fa-list',
-                ],
-                [
-                    'text' => 'Tambah Kelas',
-                    'url' => 'classes/create',
-                    'icon' => 'fas fa-fw fa-plus',
-                ],
-            ],
         ],
 
         [
             'text' => 'Siswa',
+            'url' => 'students',
             'icon' => 'fas fa-fw fa-user-graduate',
-            'submenu' => [
-                [
-                    'text' => 'Daftar Siswa',
-                    'url' => 'students',
-                    'icon' => 'fas fa-fw fa-list',
-                ],
-                [
-                    'text' => 'Tambah Siswa',
-                    'url' => 'students/create',
-                    'icon' => 'fas fa-fw fa-plus',
-                ],
-            ],
+        ],
+
+        [
+            'text' => 'Wali Kelas',
+            'url' => 'users',
+            'icon' => 'fas fa-fw fa-chalkboard-teacher',
         ],
 
         ['header' => 'KEUANGAN'],
 
         [
             'text' => 'Jenis Pembayaran',
+            'url' => 'payment-types',
             'icon' => 'fas fa-fw fa-tags',
-            'submenu' => [
-                [
-                    'text' => 'Daftar Jenis',
-                    'url' => 'payment-types',
-                    'icon' => 'fas fa-fw fa-list',
-                ],
-                [
-                    'text' => 'Tambah Jenis',
-                    'url' => 'payment-types/create',
-                    'icon' => 'fas fa-fw fa-plus',
-                ],
-            ],
         ],
 
         [
             'text' => 'Tagihan',
+            'url' => 'bills',
             'icon' => 'fas fa-fw fa-file-invoice',
-            'submenu' => [
-                [
-                    'text' => 'Daftar Tagihan',
-                    'url' => 'bills',
-                    'icon' => 'fas fa-fw fa-list',
-                ],
-                [
-                    'text' => 'Buat Tagihan',
-                    'url' => 'bills/create',
-                    'icon' => 'fas fa-fw fa-plus',
-                ],
-            ],
         ],
 
         ['header' => 'PENGATURAN'],
