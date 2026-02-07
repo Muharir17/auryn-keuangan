@@ -327,12 +327,6 @@ return [
             'icon' => 'fas fa-fw fa-user-graduate',
         ],
 
-        [
-            'text' => 'Wali Kelas',
-            'url' => 'users',
-            'icon' => 'fas fa-fw fa-chalkboard-teacher',
-        ],
-
         ['header' => 'KEUANGAN'],
 
         [
@@ -347,7 +341,118 @@ return [
             'icon' => 'fas fa-fw fa-file-invoice',
         ],
 
+        [
+            'text' => 'Pembayaran',
+            'url' => 'payments',
+            'icon' => 'fas fa-fw fa-credit-card',
+            'can' => 'view-payments',
+        ],
+
+        ['header' => 'MANAJEMEN RBAC'],
+
+        [
+            'text' => 'Roles',
+            'url' => 'roles',
+            'icon' => 'fas fa-fw fa-user-shield',
+            'can' => 'manage-roles',
+        ],
+
+        [
+            'text' => 'Wali Kelas',
+            'url' => 'users/wali-kelas',
+            'icon' => 'fas fa-fw fa-chalkboard-teacher',
+            'can' => 'manage-wali-kelas',
+        ],
+
+        [
+            'text' => 'All Users',
+            'url' => 'users',
+            'icon' => 'fas fa-fw fa-users',
+            'can' => 'manage-users',
+        ],
+
+        [
+            'text' => 'Permissions',
+            'url' => 'permissions',
+            'icon' => 'fas fa-fw fa-key',
+            'can' => 'manage-permissions',
+        ],
+
+        ['header' => 'LAPORAN'],
+
+        [
+            'text' => 'Laporan Keuangan',
+            'url' => 'reports/financial',
+            'icon' => 'fas fa-fw fa-chart-line',
+            'can' => 'view-reports',
+        ],
+
+        [
+            'text' => 'Laporan Pembayaran',
+            'url' => 'reports/payments',
+            'icon' => 'fas fa-fw fa-money-bill-wave',
+            'can' => 'view-reports',
+        ],
+
+        [
+            'text' => 'Audit Logs',
+            'url' => 'logs',
+            'icon' => 'fas fa-fw fa-history',
+            'can' => 'view-logs',
+        ],
+
+        ['header' => 'MANAJEMEN BOS'],
+
+        [
+            'text' => 'Budget BOS',
+            'url' => 'bos/budgets',
+            'icon' => 'fas fa-fw fa-wallet',
+            'can' => 'manage-bos',
+        ],
+
+        [
+            'text' => 'Transaksi BOS',
+            'url' => 'bos/transactions',
+            'icon' => 'fas fa-fw fa-exchange-alt',
+            'can' => 'manage-bos',
+        ],
+
+        ['header' => 'MANAJEMEN PROPOSAL'],
+
+        [
+            'text' => 'Daftar Proposal',
+            'url' => 'proposals',
+            'icon' => 'fas fa-fw fa-file-alt',
+            'can' => 'manage-proposals',
+        ],
+
+        [
+            'text' => 'Approval Proposal',
+            'url' => 'proposals/approval',
+            'icon' => 'fas fa-fw fa-check-circle',
+            'can' => 'approve-proposals',
+        ],
+
         ['header' => 'PENGATURAN'],
+
+        [
+            'text' => 'Settings',
+            'url' => 'settings',
+            'icon' => 'fas fa-fw fa-cog',
+            'can' => 'manage-settings',
+        ],
+
+        [
+            'text' => 'System Information',
+            'url' => 'system/info',
+            'icon' => 'fas fa-fw fa-info-circle',
+        ],
+
+        [
+            'text' => 'Profile',
+            'url' => 'profile',
+            'icon' => 'fas fa-fw fa-user',
+        ],
 
         [
             'text' => 'Logout',
